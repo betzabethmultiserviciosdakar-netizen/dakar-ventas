@@ -176,7 +176,7 @@
 </div>
 
 <script>
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTviotp9xDd9eB-4YVMbNKL-ERVbaB95dyTIptF1QsNzRYLksncPkoXn7o-1Lt2qfCQJJeKSF_hDBxU/pub?gid=187937601&single=true&output=csv';
+const DATA_URL='https://script.google.com/macros/s/AKfycbwQAhaGB2MPDHrqYpQwWLgsOFK2d3Lp6YrF1C2JCTXTPQPJ3x8pv2k6jSN8hkjLhDgctA/exec';
 
 const CAT_COLORS={
   Mayor:    {main:'#1D4ED8',shades:['#1E3A8A','#1D4ED8','#2563EB','#3B82F6','#60A5FA','#93C5FD']},
@@ -1043,10 +1043,25 @@ function renderConsolidado(allRows){
 
 async function boot(){
   try{
-    const resp=await fetch(CSV_URL);
+    const resp=await fetch(DATA_URL);
     if(!resp.ok)throw new Error('HTTP '+resp.status);
-    const text=await resp.text();
-    ALL_ROWS=parseCSV(text);
+    const json=await resp.json();
+    if(json.error)throw new Error(json.error);
+    // Normalize — convert numeric fields
+    ALL_ROWS=json.map(r=>({
+      ARTICULO: String(r.ARTICULO||''),
+      FACTURA:  String(r.FACTURA||''),
+      FECHA:    String(r.FECHA||'').slice(0,10),
+      CLIENTE:  String(r.CLIENTE||''),
+      VENDEDOR: String(r.VENDEDOR||''),
+      ALMACEN:  String(r.ALMACEN||''),
+      CANTIDAD: r.CANTIDAD||0,
+      PRECIO:   r.PRECIO||0,
+      DESCUENTO:r.DESCUENTO||0,
+      NETO:     r.NETO||0,
+      NOMBRE:   String(r.NOMBRE||''),
+      CATEGORIA:String(r.CATEGORIA||''),
+    }));
     if(!ALL_ROWS.length)throw new Error('Sin datos');
     const meses=getMesesDisponibles(ALL_ROWS);
     const sel=document.getElementById('mesSelect');
