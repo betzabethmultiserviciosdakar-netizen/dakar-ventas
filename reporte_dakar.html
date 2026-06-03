@@ -732,29 +732,40 @@ function refreshExtraTabs(rows, periodoLabel){
 }
 
 // ── Seguimiento diario ───────────────────────────────────────
+// ── Seguimiento diario ───────────────────────────────────────
 function renderSeguimiento(rows, periodoLabel){
-  const COLS=['Mayor','Tienda','CRM_AP','ML','Taller','Calle'];
-  const HEADERS=['Mayor','Tienda','CRM + AutoParts','ML','Taller','Vend. de Calle'];
-  const COLORS=['var(--mayor)','var(--detal)','var(--autoparts)','#0369A1','var(--taller)','var(--calle)'];
+  const COLS    = ['Mayor','Tienda','CRM','AutoParts','ML','Taller','Calle'];
+  const HEADERS = ['Mayor','Tienda','CRM','AutoParts','ML','Taller','Vend. de Calle'];
+  const COLORS  = ['#1D4ED8','#047857','#0891B2','#6D28D9','#0369A1','#B45309','#0E7490'];
+  const LEYENDA = {
+    Mayor:    'Ignacio Matos, Erik Dupret, Eduardo Parra, Rodrigo Gomez, Mary Nelly, Augusto Gonzalez',
+    Tienda:   'Carlos Pellico, Kimex Azpirichaga, Karina Hernandez, Carlos Santana, Gustavo Urdaneta, Santana Carlos, Fernando Araujo',
+    CRM:      'CRM Detal',
+    AutoParts:'CRM AutoParts, Edgar Quiros, Daniel AutoParts',
+    ML:       'Mercado Libre, ML Adicional',
+    Taller:   'Frank, Roger',
+    Calle:    'Freddy Zamaro, Pedro Veliz, Pedro Criollo, Jose Rojas, Luis Rodriguez, Horacio Urbaez',
+  };
 
-  // IDs por columna
-  const calleIds=['24','37','38','39','42','44'];
-  const mlIds=['90','92'];
-  const tiendaIds=['6','7','12','13','20','23','34']; // Detal sin CRM, incluye Fernando Araujo
-  const crmApIds=['93','94','95','96'];           // CRM Detal + AutoParts
+  const calleIds  = ['24','37','38','39','42','44'];
+  const mlIds     = ['90','92'];
+  const tiendaIds = ['6','7','12','13','20','23','34'];
+  const crmIds    = ['93'];
+  const apIds     = ['94','95','96'];
+  const mayorIds  = ['45','46','47','49','5','81'];
 
-  // Reclasificar según las columnas de Juan
   const rowsC=rows.map(r=>{
     let cat=r.CATEGORIA;
     if(calleIds.includes(r.VENDEDOR))       cat='Calle';
     else if(mlIds.includes(r.VENDEDOR))     cat='ML';
     else if(tiendaIds.includes(r.VENDEDOR)) cat='Tienda';
-    else if(crmApIds.includes(r.VENDEDOR))  cat='CRM_AP';
-    else if(r.CATEGORIA==='Detal')          cat='Tienda'; // cualquier otro detal
+    else if(crmIds.includes(r.VENDEDOR))    cat='CRM';
+    else if(apIds.includes(r.VENDEDOR))     cat='AutoParts';
+    else if(mayorIds.includes(r.VENDEDOR))  cat='Mayor';
+    else if(['26','28'].includes(r.VENDEDOR)) cat='Taller';
     return{...r,_cat:cat};
-  }).filter(r=>r.FECHA&&r._cat!=='Excluido'&&r._cat!=='Otro');
+  }).filter(r=>r.FECHA&&COLS.includes(r._cat));
 
-  // Agrupar por fecha y categoría
   const byDay={};
   rowsC.forEach(r=>{
     if(!byDay[r.FECHA])byDay[r.FECHA]={};
@@ -769,14 +780,13 @@ function renderSeguimiento(rows, periodoLabel){
   const year=+sy, month=+sm-1;
   const rangosMes=getRangosSemanasMes(year,month);
 
-  const diasEs={'Mon':'Lun','Tue':'Mar','Wed':'Mié','Thu':'Jue','Fri':'Vie','Sat':'Sáb'};
   const makeDay=f=>{
     const dt=new Date(f+'T12:00:00');
     const d={'Mon':'Lun','Tue':'Mar','Wed':'Mié','Thu':'Jue','Fri':'Vie','Sat':'Sáb','Sun':'Dom'}[dt.toLocaleDateString('en-US',{weekday:'short'}).slice(0,3)]||'?';
-    return`${d} ${dt.getDate()}`;
+    const mLabel=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dt.getMonth()];
+    return`${d} ${dt.getDate()} ${mLabel}`;
   };
 
-  // Agrupar fechas por semana
   const bySem={};
   fechas.forEach(f=>{
     const sem=getSemanaDelMes(f);
@@ -785,7 +795,6 @@ function renderSeguimiento(rows, periodoLabel){
     bySem[sem].push(f);
   });
 
-  // Totales generales
   const grandTotals={};
   COLS.forEach(c=>{grandTotals[c]=fechas.reduce((s,f)=>s+(byDay[f][c]||0),0);});
   const grandTotal=COLS.reduce((s,c)=>s+grandTotals[c],0);
@@ -798,7 +807,7 @@ function renderSeguimiento(rows, periodoLabel){
     </tr>
     <tr class="leyenda-row">
       <td></td>
-      ${COLS.map(c=>`<td class="leyenda-cell">${LEYENDA[c]||''}</td>`).join('')}
+      ${COLS.map((c,i)=>`<td class="leyenda-cell" style="color:${COLORS[i]}33;">${LEYENDA[c]||''}</td>`).join('')}
       <td></td>
     </tr>
   </thead>`;
