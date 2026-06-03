@@ -131,6 +131,20 @@
   .note{font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:1rem;margin-top:2.5rem;}
   .empty-cat{padding:2rem;text-align:center;color:var(--muted);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;}
 
+  /* Info button & panel */
+  .info-btn{background:none;border:1.5px solid var(--border);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .info-btn:hover{border-color:var(--mayor);color:var(--mayor);}
+  #info-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+  .info-panel-inner{}
+  .info-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .info-title{font-size:13px;font-weight:600;}
+  .info-close{background:none;border:none;font-size:14px;color:var(--muted);cursor:pointer;padding:2px 6px;}
+  .info-close:hover{color:var(--text);}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;}
+  .info-cat{background:var(--bg3);border-radius:8px;padding:.6rem .8rem;}
+  .info-cat-name{font-size:12px;font-weight:700;margin-bottom:3px;}
+  .info-cat-vends{font-size:11px;color:var(--muted);line-height:1.5;}
+
   @media(max-width:600px){
     .metric-grid{grid-template-columns:repeat(2,1fr);}
     .page-header{flex-direction:column;}
@@ -142,9 +156,12 @@
 <body>
 <div class="shell">
   <div class="page-header">
-    <div>
-      <div class="page-title">Reporte de Ventas</div>
-      <div class="page-sub">Multiservicios Dakar C.A.</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div>
+        <div class="page-title">Reporte de Ventas</div>
+        <div class="page-sub">Multiservicios Dakar C.A.</div>
+      </div>
+      <button class="info-btn" onclick="toggleInfo()" title="Ver clasificación de vendedores">ⓘ</button>
     </div>
     <div class="header-right">
       <div class="period-selector">
@@ -152,6 +169,28 @@
         <select id="mesSelect" onchange="cambiarMes()"><option value="">Cargando...</option></select>
       </div>
       <div class="last-update" id="lastUpdate"></div>
+    </div>
+  </div>
+
+  <!-- Panel de clasificación -->
+  <div id="info-panel" style="display:none;">
+    <div class="info-panel-inner">
+      <div class="info-header">
+        <span class="info-title">Clasificación de vendedores</span>
+        <button class="info-close" onclick="toggleInfo()">✕</button>
+      </div>
+      <div class="info-grid">
+        <div class="info-cat"><div class="info-cat-name" style="color:#1D4ED8;">Mayor</div><div class="info-cat-vends">Ignacio Matos · Erik Dupret · Eduardo Parra · Rodrigo Gomez · Mary Nelly · Augusto Gonzalez</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:#047857;">Detal</div><div class="info-cat-vends">Carlos Pellico · Kimex Azpirichaga · Karina Hernandez · Carlos Santana · Gustavo Urdaneta · Santana Carlos · Fernando Araujo · CRM Detal</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:#0369A1;">Mercado Libre</div><div class="info-cat-vends">Mercado Libre · ML Adicional</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:#6D28D9;">AutoParts</div><div class="info-cat-vends">CRM AutoParts · Edgar Quiros · Daniel AutoParts</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:#B45309;">Taller</div><div class="info-cat-vends">Frank · Roger</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:#0E7490;">Vendedor de Calle</div><div class="info-cat-vends">Freddy Zamaro · Pedro Veliz · Pedro Criollo · Jose Rojas · Luis Rodriguez · Horacio Urbaez</div></div>
+        <div class="info-cat"><div class="info-cat-name" style="color:var(--muted);">Excluidos</div><div class="info-cat-vends">Gerencia · Garantías · Empleados · Pagina Web</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
+        En el <strong>Seguimiento Diario</strong>, CRM Detal aparece como columna separada para mayor detalle, pero se contabiliza dentro de Detal en los demás reportes.
+      </div>
     </div>
   </div>
 
@@ -165,12 +204,13 @@ const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTviotp9xDd9eB-4Y
 
 const CAT_COLORS={
   Mayor:    {main:'#1D4ED8',shades:['#1E3A8A','#1D4ED8','#2563EB','#3B82F6','#60A5FA','#93C5FD']},
+  ML:       {main:'#0369A1',shades:['#0369A1','#0284C7','#0EA5E9']},
   Detal:    {main:'#047857',shades:['#064E3B','#065F46','#047857','#059669','#10B981','#34D399','#6EE7B7','#A7F3D0','#D1FAE5']},
   Taller:   {main:'#B45309',shades:['#78350F','#B45309']},
   AutoParts:{main:'#6D28D9',shades:['#4C1D95','#5B21B6','#6D28D9']},
   Calle:    {main:'#0E7490',shades:['#164E63','#0E7490','#0891B2','#06B6D4','#22D3EE','#67E8F9']},
 };
-const CAT_LABELS={Mayor:'Mayor',Detal:'Detal',Taller:'Taller',AutoParts:'AutoParts',Calle:'Vendedor de Calle'};
+const CAT_LABELS={Mayor:'Mayor',Detal:'Detal',ML:'Mercado Libre',AutoParts:'AutoParts',Taller:'Taller',Calle:'Vendedor de Calle'};
 const MESES_ES={
   '01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio',
   '07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'
@@ -342,11 +382,18 @@ function getMesesDisponibles(rows){
 }
 
 function aggregate(rows){
-  // Reclasificar Calle
-  const calleIds=['24','37','38','39','42','44'];
-  rows.forEach(r=>{if(calleIds.includes(r.VENDEDOR))r.CATEGORIA='Calle';});
+  const CAT_MAP={
+    '5':'Mayor','45':'Mayor','46':'Mayor','47':'Mayor','49':'Mayor','81':'Mayor',
+    '6':'Detal','7':'Detal','12':'Detal','13':'Detal','20':'Detal','23':'Detal','34':'Detal','93':'Detal',
+    '90':'ML','92':'ML',
+    '94':'AutoParts','95':'AutoParts','96':'AutoParts',
+    '26':'Taller','28':'Taller',
+    '24':'Calle','37':'Calle','38':'Calle','39':'Calle','42':'Calle','44':'Calle',
+    '19':'Excluido','59':'Excluido','98':'Excluido','99':'Excluido',
+  };
+  rows.forEach(r=>{ if(CAT_MAP[r.VENDEDOR]) r.CATEGORIA=CAT_MAP[r.VENDEDOR]; });
 
-  const cats=['Mayor','Detal','Taller','AutoParts','Calle'];
+  const cats=['Mayor','Detal','ML','AutoParts','Taller','Calle'];
   const result={};
   cats.forEach(cat=>{
     const data=rows.filter(r=>r.CATEGORIA===cat);
@@ -506,7 +553,7 @@ function render(rows, mesKey){
   destroyCharts();
   const app=document.getElementById('app');
   const data=aggregate(rows);
-  const cats=['Mayor','Detal','Taller','AutoParts','Calle'];
+  const cats=['Mayor','Detal','ML','AutoParts','Taller','Calle'];
   const totalEmpresa=cats.reduce((s,c)=>s+(data[c]?.total||0),0);
   const totalConExcl=totalEmpresa+(data._excluidos?.gerencia||0)+(data._excluidos?.otros||0);
   const [yyyy,mm]=mesKey.split('-');
@@ -633,6 +680,11 @@ function cambiarMes(){
   render(rowsFiltrados,mesKey);
   const[my,mm]=mesKey.split('-');
   refreshExtraTabs(rowsFiltrados,`${MESES_ES[mm]||mm} ${my}`);
+}
+
+function toggleInfo(){
+  const p=document.getElementById('info-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
 }
 
 function switchTab(cat,btn){
