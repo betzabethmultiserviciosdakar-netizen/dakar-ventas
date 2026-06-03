@@ -99,14 +99,19 @@
   .seg-table tr td{padding:6px 10px;}
 
   /* Leyenda en seguimiento */
-  .leyenda-row td{font-size:10px;color:var(--muted);padding:3px 10px 6px;border-bottom:1.5px solid var(--border);line-height:1.4;font-style:italic;}
-  .seg-table thead tr:first-child th{border-bottom:none;}
-
   /* Semana block in seguimiento */
   .sem-block-table{margin-bottom:1.5rem;}
   .sem-block-header{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;}
   .sem-block-table .seg-table{border-radius:0 0 6px 6px;border:1px solid var(--border);overflow:hidden;}
   .sem-block-table .seg-table th{position:static;}
+
+  /* Leyenda seguimiento */
+  .leyenda-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.1rem;margin-top:1.25rem;}
+  .leyenda-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;}
+  .leyenda-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem;}
+  .leyenda-item{display:flex;flex-direction:column;gap:2px;}
+  .leyenda-cat{font-size:12px;font-weight:600;}
+  .leyenda-vends{font-size:11px;color:var(--muted);line-height:1.5;}
 
   /* Consolidado mensual */
   .cons-section{margin-bottom:2.5rem;}
@@ -732,44 +737,39 @@ function refreshExtraTabs(rows, periodoLabel){
 }
 
 // ── Seguimiento diario ───────────────────────────────────────
-// ── Seguimiento diario ───────────────────────────────────────
 function renderSeguimiento(rows, periodoLabel){
   const COLS    = ['Mayor','Tienda','CRM','AutoParts','ML','Taller','Calle'];
   const HEADERS = ['Mayor','Tienda','CRM','AutoParts','ML','Taller','Vend. de Calle'];
   const COLORS  = ['#1D4ED8','#047857','#0891B2','#6D28D9','#0369A1','#B45309','#0E7490'];
   const LEYENDA = {
-    Mayor:    'Ignacio Matos, Erik Dupret, Eduardo Parra, Rodrigo Gomez, Mary Nelly, Augusto Gonzalez',
-    Tienda:   'Carlos Pellico, Kimex Azpirichaga, Karina Hernandez, Carlos Santana, Gustavo Urdaneta, Santana Carlos, Fernando Araujo',
+    Mayor:    'Ignacio Matos · Erik Dupret · Eduardo Parra · Rodrigo Gomez · Mary Nelly · Augusto Gonzalez',
+    Tienda:   'Carlos Pellico · Kimex Azpirichaga · Karina Hernandez · Carlos Santana · Gustavo Urdaneta · Santana Carlos · Fernando Araujo',
     CRM:      'CRM Detal',
-    AutoParts:'CRM AutoParts, Edgar Quiros, Daniel AutoParts',
-    ML:       'Mercado Libre, ML Adicional',
-    Taller:   'Frank, Roger',
-    Calle:    'Freddy Zamaro, Pedro Veliz, Pedro Criollo, Jose Rojas, Luis Rodriguez, Horacio Urbaez',
+    AutoParts:'CRM AutoParts · Edgar Quiros · Daniel AutoParts',
+    ML:       'Mercado Libre · ML Adicional',
+    Taller:   'Frank · Roger',
+    Calle:    'Freddy Zamaro · Pedro Veliz · Pedro Criollo · Jose Rojas · Luis Rodriguez · Horacio Urbaez',
   };
 
-  const calleIds  = ['24','37','38','39','42','44'];
-  const mlIds     = ['90','92'];
-  const tiendaIds = ['6','7','12','13','20','23','34'];
-  const crmIds    = ['93'];
-  const apIds     = ['94','95','96'];
-  const mayorIds  = ['45','46','47','49','5','81'];
+  // Mapeo explícito vendedor → columna
+  const VEND_COL = {
+    '45':'Mayor','46':'Mayor','47':'Mayor','49':'Mayor','5':'Mayor','81':'Mayor',
+    '6':'Tienda','7':'Tienda','12':'Tienda','13':'Tienda','20':'Tienda','23':'Tienda','34':'Tienda',
+    '93':'CRM',
+    '94':'AutoParts','95':'AutoParts','96':'AutoParts',
+    '90':'ML','92':'ML',
+    '26':'Taller','28':'Taller',
+    '24':'Calle','37':'Calle','38':'Calle','39':'Calle','42':'Calle','44':'Calle',
+  };
 
-  const rowsC=rows.map(r=>{
-    let cat=r.CATEGORIA;
-    if(calleIds.includes(r.VENDEDOR))       cat='Calle';
-    else if(mlIds.includes(r.VENDEDOR))     cat='ML';
-    else if(tiendaIds.includes(r.VENDEDOR)) cat='Tienda';
-    else if(crmIds.includes(r.VENDEDOR))    cat='CRM';
-    else if(apIds.includes(r.VENDEDOR))     cat='AutoParts';
-    else if(mayorIds.includes(r.VENDEDOR))  cat='Mayor';
-    else if(['26','28'].includes(r.VENDEDOR)) cat='Taller';
-    return{...r,_cat:cat};
-  }).filter(r=>r.FECHA&&COLS.includes(r._cat));
-
+  // Agrupar por fecha y columna usando mapeo explícito
   const byDay={};
-  rowsC.forEach(r=>{
+  rows.forEach(r=>{
+    if(!r.FECHA)return;
+    const col=VEND_COL[r.VENDEDOR];
+    if(!col)return;
     if(!byDay[r.FECHA])byDay[r.FECHA]={};
-    byDay[r.FECHA][r._cat]=(byDay[r.FECHA][r._cat]||0)+parseNum(r.NETO);
+    byDay[r.FECHA][col]=(byDay[r.FECHA][col]||0)+parseNum(r.NETO);
   });
 
   const fechas=Object.keys(byDay).sort();
@@ -799,18 +799,11 @@ function renderSeguimiento(rows, periodoLabel){
   COLS.forEach(c=>{grandTotals[c]=fechas.reduce((s,f)=>s+(byDay[f][c]||0),0);});
   const grandTotal=COLS.reduce((s,c)=>s+grandTotals[c],0);
 
-  const theadHtml=`<thead>
-    <tr>
-      <th>Fecha</th>
-      ${HEADERS.map((h,i)=>`<th style="color:${COLORS[i]};">${h}</th>`).join('')}
-      <th>Total</th>
-    </tr>
-    <tr class="leyenda-row">
-      <td></td>
-      ${COLS.map((c,i)=>`<td class="leyenda-cell" style="color:${COLORS[i]}33;">${LEYENDA[c]||''}</td>`).join('')}
-      <td></td>
-    </tr>
-  </thead>`;
+  const theadHtml=`<thead><tr>
+    <th>Fecha</th>
+    ${HEADERS.map((h,i)=>`<th style="color:${COLORS[i]};">${h}</th>`).join('')}
+    <th>Total</th>
+  </tr></thead>`;
 
   let html=`<div class="seg-table-wrap">`;
 
@@ -819,28 +812,18 @@ function renderSeguimiento(rows, periodoLabel){
     const semTotals={};
     COLS.forEach(c=>semTotals[c]=0);
 
-    // Each week is its own mini-table with header
     html+=`
     <div class="sem-block-table">
       <div class="sem-block-header">Semana ${sem} &nbsp;·&nbsp; ${rango}</div>
       <table class="seg-table">
-        ${theadHtml}
-        <tbody>`;
+        ${theadHtml}<tbody>`;
 
     dias.forEach(f=>{
       const rowTotal=COLS.reduce((s,c)=>s+(byDay[f][c]||0),0);
       COLS.forEach(c=>semTotals[c]+=(byDay[f][c]||0));
-      const dt=new Date(f+'T12:00:00');
-      const diasEs2={'Mon':'Lun','Tue':'Mar','Wed':'Mié','Thu':'Jue','Fri':'Vie','Sat':'Sáb'};
-      const dLabel=diasEs2[dt.toLocaleDateString('en-US',{weekday:'short'}).slice(0,3)]||'?';
-      const mLabel=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dt.getMonth()];
-      const fechaLabel=`${dLabel} ${dt.getDate()} ${mLabel}`;
       html+=`<tr>
-        <td>${fechaLabel}</td>
-        ${COLS.map(c=>{
-          const v=byDay[f][c]||0;
-          return v>0?`<td>${fmt(v)}</td>`:`<td class="zero">—</td>`;
-        }).join('')}
+        <td>${makeDay(f)}</td>
+        ${COLS.map(c=>{const v=byDay[f][c]||0;return v>0?`<td>${fmt(v)}</td>`:`<td class="zero">—</td>`;}).join('')}
         <td style="font-weight:600;">${fmt(rowTotal)}</td>
       </tr>`;
     });
@@ -850,24 +833,31 @@ function renderSeguimiento(rows, periodoLabel){
       <td>Subtotal Sem ${sem}</td>
       ${COLS.map(c=>`<td>${fmt(semTotals[c])}</td>`).join('')}
       <td>${fmt(semTotal)}</td>
-    </tr>
-        </tbody>
-      </table>
-    </div>`;
+    </tr></tbody></table></div>`;
   });
 
-  // Total general
-  html+=`<table class="seg-table" style="margin-top:4px;">
-    <tbody>
+  html+=`<table class="seg-table" style="margin-top:4px;"><tbody>
     <tr class="total-row">
       <td>TOTAL ${periodoLabel.toUpperCase()}</td>
       ${COLS.map(c=>`<td>${fmt(grandTotals[c])}</td>`).join('')}
       <td>${fmt(grandTotal)}</td>
     </tr>
-    </tbody>
-  </table>`;
+  </tbody></table>`;
 
   html+=`</div>`;
+
+  // Leyenda separada debajo de la tabla
+  html+=`<div class="leyenda-box">
+    <div class="leyenda-title">Composición de cada columna</div>
+    <div class="leyenda-grid">
+      ${COLS.map((c,i)=>`
+        <div class="leyenda-item">
+          <span class="leyenda-cat" style="color:${COLORS[i]};">${HEADERS[i]}</span>
+          <span class="leyenda-vends">${LEYENDA[c]}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+
   return html;
 }
 
