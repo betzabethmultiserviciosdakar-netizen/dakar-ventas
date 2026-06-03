@@ -383,8 +383,8 @@ function getMesesDisponibles(rows){
 
 function aggregate(rows){
   const CAT_MAP={
-    '5':'Mayor','45':'Mayor','46':'Mayor','47':'Mayor','49':'Mayor','81':'Mayor',
-    '6':'Detal','7':'Detal','12':'Detal','13':'Detal','20':'Detal','23':'Detal','34':'Detal','93':'Detal',
+    '5':'Mayor','15':'Mayor','45':'Mayor','46':'Mayor','47':'Mayor','49':'Mayor','81':'Mayor','82':'Mayor',
+    '3':'Detal','6':'Detal','7':'Detal','12':'Detal','13':'Detal','20':'Detal','23':'Detal','34':'Detal','51':'Detal','93':'Detal',
     '90':'ML','92':'ML',
     '94':'AutoParts','95':'AutoParts','96':'AutoParts',
     '26':'Taller','28':'Taller',
@@ -916,19 +916,22 @@ function renderSeguimiento(rows, periodoLabel){
 // ── Consolidado mensual ───────────────────────────────────────
 function renderConsolidado(allRows){
   // Categorías ordenadas dinámicamente por total descendente
-  const CATS_BASE=['Mayor','Calle','Detal','AutoParts','ML','Taller'];
-  const CAT_NAMES={Mayor:'Mayor',Calle:'Vendedor de Calle',Detal:'Detal',AutoParts:'AutoParts',ML:'Mercado Libre',Taller:'Taller'};
+  const CATS_BASE=['Mayor','Detal','ML','AutoParts','Taller','Calle'];
+  const CAT_NAMES={Mayor:'Mayor',Detal:'Detal',ML:'Mercado Libre',AutoParts:'AutoParts',Taller:'Taller',Calle:'Vendedor de Calle'};
   const CAT_COLORS_MAP={Mayor:'#1D4ED8',Calle:'#0E7490',Detal:'#047857',AutoParts:'#6D28D9',ML:'#0369A1',Taller:'#B45309'};
   const calleIds=['24','37','38','39','42','44'];
   const mlIds=['90','92'];
   const MESES={'01':'Ene','02':'Feb','03':'Mar','04':'Abr','05':'May','06':'Jun','07':'Jul','08':'Ago','09':'Sep','10':'Oct','11':'Nov','12':'Dic'};
 
   const rowsC=allRows.map(r=>{
-    let cat=r.CATEGORIA;
-    if(calleIds.includes(r.VENDEDOR))cat='Calle';
-    else if(mlIds.includes(r.VENDEDOR))cat='ML';
-    return{...r,_cat:cat};
-  }).filter(r=>r.FECHA&&r._cat!=='Excluido'&&r._cat!=='Otro');
+    const cm={'5':'Mayor','15':'Mayor','45':'Mayor','46':'Mayor','47':'Mayor','49':'Mayor','81':'Mayor','82':'Mayor',
+      '3':'Detal','6':'Detal','7':'Detal','12':'Detal','13':'Detal','20':'Detal','23':'Detal','34':'Detal','51':'Detal','93':'Detal',
+      '90':'ML','92':'ML','94':'AutoParts','95':'AutoParts','96':'AutoParts',
+      '26':'Taller','28':'Taller',
+      '24':'Calle','37':'Calle','38':'Calle','39':'Calle','42':'Calle','44':'Calle',
+    };
+    return{...r,_cat:cm[r.VENDEDOR]||r.CATEGORIA};
+  }).filter(r=>r.FECHA&&r._cat!=='Excluido'&&r._cat!=='Otro'&&r._cat);
 
   const byMes={};
   rowsC.forEach(r=>{
