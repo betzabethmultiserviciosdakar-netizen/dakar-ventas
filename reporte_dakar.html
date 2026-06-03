@@ -158,7 +158,6 @@
         <div class="page-title">Reporte de Ventas</div>
         <div class="page-sub">Multiservicios Dakar C.A.</div>
       </div>
-      <button class="info-btn" onclick="toggleInfo()" title="Ver clasificación de vendedores">ⓘ</button>
     </div>
     <div class="header-right">
       <div class="period-selector">
@@ -187,7 +186,7 @@ const CAT_COLORS={
   AutoParts:{main:'#6D28D9',shades:['#4C1D95','#5B21B6','#6D28D9']},
   Calle:    {main:'#0E7490',shades:['#164E63','#0E7490','#0891B2','#06B6D4','#22D3EE','#67E8F9']},
 };
-const CAT_LABELS={Mayor:'Mayor',Detal:'Detal',ML:'Mercado Libre',AutoParts:'AutoParts',Taller:'Taller',Calle:'Vendedor de Calle'};
+const CAT_LABELS={Mayor:'Mayor',Calle:'Vendedor de Calle',Detal:'Detal',ML:'Mercado Libre',AutoParts:'AutoParts',Taller:'Taller'};
 const MESES_ES={
   '01':'Enero','02':'Febrero','03':'Marzo','04':'Abril','05':'Mayo','06':'Junio',
   '07':'Julio','08':'Agosto','09':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'
@@ -370,7 +369,7 @@ function aggregate(rows){
   };
   rows.forEach(r=>{ if(CAT_MAP[r.VENDEDOR]) r.CATEGORIA=CAT_MAP[r.VENDEDOR]; });
 
-  const cats=['Mayor','Detal','ML','AutoParts','Taller','Calle'];
+  const cats=['Mayor','Calle','Detal','ML','AutoParts','Taller'];
   const result={};
   cats.forEach(cat=>{
     const data=rows.filter(r=>r.CATEGORIA===cat);
@@ -530,7 +529,9 @@ function render(rows, mesKey){
   destroyCharts();
   const app=document.getElementById('app');
   const data=aggregate(rows);
-  const cats=['Mayor','Detal','ML','AutoParts','Taller','Calle'];
+  // Ordenar categorías dinámicamente por total descendente
+  const catsBase=['Mayor','Calle','Detal','ML','AutoParts','Taller'];
+  const cats=catsBase.slice().sort((a,b)=>(data[b]?.total||0)-(data[a]?.total||0));
   const totalEmpresa=cats.reduce((s,c)=>s+(data[c]?.total||0),0);
   const totalConExcl=totalEmpresa+(data._excluidos?.gerencia||0)+(data._excluidos?.otros||0);
   const [yyyy,mm]=mesKey.split('-');
