@@ -131,19 +131,16 @@
   .note{font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:1rem;margin-top:2.5rem;}
   .empty-cat{padding:2rem;text-align:center;color:var(--muted);font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;}
 
-  /* Info button & panel */
-  .info-btn{background:none;border:1.5px solid var(--border);border-radius:50%;width:28px;height:28px;font-size:15px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s;}
-  .info-btn:hover{border-color:var(--mayor);color:var(--mayor);}
-  #info-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
-  .info-panel-inner{}
-  .info-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
-  .info-title{font-size:13px;font-weight:600;}
-  .info-close{background:none;border:none;font-size:14px;color:var(--muted);cursor:pointer;padding:2px 6px;}
-  .info-close:hover{color:var(--text);}
-  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;}
-  .info-cat{background:var(--bg3);border-radius:8px;padding:.6rem .8rem;}
-  .info-cat-name{font-size:12px;font-weight:700;margin-bottom:3px;}
-  .info-cat-vends{font-size:11px;color:var(--muted);line-height:1.5;}
+  /* Clasificación colapsable */
+  .clasificacion-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;margin-bottom:1.25rem;}
+  .clasificacion-toggle{font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;}
+  .clasificacion-toggle::before{content:'▶';font-size:9px;transition:transform .2s;}
+  details[open] .clasificacion-toggle::before{transform:rotate(90deg);}
+  .clasificacion-toggle::-webkit-details-marker{display:none;}
+  .clasificacion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.6rem;margin-top:.75rem;}
+  .clasificacion-item{background:var(--bg3);border-radius:8px;padding:.6rem .8rem;}
+  .clasificacion-cat{display:block;font-size:12px;font-weight:700;margin-bottom:3px;}
+  .clasificacion-vends{font-size:11px;color:var(--muted);line-height:1.5;}
 
   @media(max-width:600px){
     .metric-grid{grid-template-columns:repeat(2,1fr);}
@@ -172,27 +169,7 @@
     </div>
   </div>
 
-  <!-- Panel de clasificación -->
-  <div id="info-panel" style="display:none;">
-    <div class="info-panel-inner">
-      <div class="info-header">
-        <span class="info-title">Clasificación de vendedores</span>
-        <button class="info-close" onclick="toggleInfo()">✕</button>
-      </div>
-      <div class="info-grid">
-        <div class="info-cat"><div class="info-cat-name" style="color:#1D4ED8;">Mayor</div><div class="info-cat-vends">Ignacio Matos · Erik Dupret · Eduardo Parra · Rodrigo Gomez · Mary Nelly · Augusto Gonzalez</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:#047857;">Detal</div><div class="info-cat-vends">Carlos Pellico · Kimex Azpirichaga · Karina Hernandez · Carlos Santana · Gustavo Urdaneta · Santana Carlos · Fernando Araujo · CRM Detal</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:#0369A1;">Mercado Libre</div><div class="info-cat-vends">Mercado Libre · ML Adicional</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:#6D28D9;">AutoParts</div><div class="info-cat-vends">CRM AutoParts · Edgar Quiros · Daniel AutoParts</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:#B45309;">Taller</div><div class="info-cat-vends">Frank · Roger</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:#0E7490;">Vendedor de Calle</div><div class="info-cat-vends">Freddy Zamaro · Pedro Veliz · Pedro Criollo · Jose Rojas · Luis Rodriguez · Horacio Urbaez</div></div>
-        <div class="info-cat"><div class="info-cat-name" style="color:var(--muted);">Excluidos</div><div class="info-cat-vends">Gerencia · Garantías · Empleados · Pagina Web</div></div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
-        En el <strong>Seguimiento Diario</strong>, CRM Detal aparece como columna separada para mayor detalle, pero se contabiliza dentro de Detal en los demás reportes.
-      </div>
-    </div>
-  </div>
+
 
   <div id="loading"><div class="spinner"></div><p>Cargando datos...</p></div>
   <div id="error-msg"></div>
@@ -582,6 +559,19 @@ function render(rows, mesKey){
       }).join('')}
     </div>
     ${renderResumenSemanal(rows, periodoLabel)}
+    <details class="clasificacion-box">
+      <summary class="clasificacion-toggle">Ver clasificación de categorías</summary>
+      <div class="clasificacion-grid">
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#1D4ED8;">Mayor</span><span class="clasificacion-vends">Ignacio Matos · Erik Dupret · Eduardo Parra · Rodrigo Gomez · Mary Nelly · Augusto Gonzalez · Cubero Andres · AAG Gonzalez</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#047857;">Detal</span><span class="clasificacion-vends">Carlos Pellico · Kimex Azpirichaga · Karina Hernandez · Carlos Santana · Gustavo Urdaneta · Santana Carlos · Fernando Araujo · CRM Detal · Joel Tienda · Jonathan Chacon</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#0369A1;">Mercado Libre</span><span class="clasificacion-vends">Mercado Libre · ML Adicional</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#6D28D9;">AutoParts</span><span class="clasificacion-vends">CRM AutoParts · Edgar Quiros · Daniel AutoParts</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#B45309;">Taller</span><span class="clasificacion-vends">Frank · Roger</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:#0E7490;">Vendedor de Calle</span><span class="clasificacion-vends">Freddy Zamaro · Pedro Veliz · Pedro Criollo · Jose Rojas · Luis Rodriguez · Horacio Urbaez</span></div>
+        <div class="clasificacion-item"><span class="clasificacion-cat" style="color:var(--muted);">Excluidos</span><span class="clasificacion-vends">Gerencia · Garantías · Empleados · Pagina Web</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border);">En el Seguimiento Diario, CRM aparece como columna separada pero se contabiliza dentro de Detal en los demás reportes.</div>
+    </details>
     <div class="tab-bar">
       ${cats.map((c,i)=>`<button class="tab${i===0?' active':''}" onclick="switchTab('${c}',this)">${CAT_LABELS[c]}</button>`).join('')}
       <button class="tab" onclick="switchTab('seguimiento',this)">Seguimiento Diario</button>
@@ -680,11 +670,6 @@ function cambiarMes(){
   render(rowsFiltrados,mesKey);
   const[my,mm]=mesKey.split('-');
   refreshExtraTabs(rowsFiltrados,`${MESES_ES[mm]||mm} ${my}`);
-}
-
-function toggleInfo(){
-  const p=document.getElementById('info-panel');
-  p.style.display=p.style.display==='none'?'block':'none';
 }
 
 function switchTab(cat,btn){
